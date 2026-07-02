@@ -1,0 +1,126 @@
+{
+  "settings": {
+    "token": "ضع_التوكن_هنا",
+    "fuzzy_threshold": 0.55,
+    "bot_name": "بوتي",
+    "signature": "𝑺𝑬𝑫𝑫𝑰𝑮"
+  },
+
+  "start": {
+    "text": "🤖 أهلاً وسهلاً!\nاختر ما تريد من الأزرار أدناه 👇",
+    "media": null,
+    "buttons": [
+      [
+        { "text": "📞 تواصل معنا", "reply_key": "contact" },
+        { "text": "ℹ️ معلومات", "reply_key": "menu_info" }
+      ],
+      [
+        { "text": "🌐 موقعنا", "url": "https://example.com" }
+      ]
+    ]
+  },
+
+  "welcome": {
+    "enabled": true,
+    "default_photo": "media/default.jpg",
+    "media": null,
+    "text": "🌟═══════════════════🌟\n✨ أهلاً وسهلاً بك يا {name} ✨\n🌟═══════════════════🌟\n\n🎉 سعدنا جداً بانضمامك إلينا\n🌹 نتمنى لك وقتاً ممتعاً معنا\n📌 يرجى قراءة قوانين القروب\n💬 لا تتردد بالمشاركة والتفاعل\n🤝 احترام الجميع واجب علينا\n🚫 يُمنع نشر أي محتوى مخالف\n🌈 نتشارك هنا الأفكار والخبرات\n🔔 فعّل الإشعارات لتصلك آخر التحديثات\n💫 نورت القروب بوجودك\n🌟═══════════════════🌟"
+  },
+
+  "farewell": {
+    "enabled": true,
+    "default_photo": "media/default.jpg",
+    "media": null,
+    "text": "🌙═══════════════════🌙\n👋 وداعاً يا {name} 👋\n🌙═══════════════════🌙\n\n😔 غادرنا أحد أعضائنا\n🍃 نتمنى لك التوفيق دائماً\n📤 الباب مفتوح لرجوعك بأي وقت\n🤍 ذكرياتنا معك لن تُنسى\n🌹 شكراً لكل لحظة شاركتها معنا\n✨ نتمنى لك حياة مليئة بالخير\n🕊️ نسأل الله أن يوفقك بكل خطواتك\n🌙═══════════════════🌙"
+  },
+
+  "responses": [
+    {
+      "triggers": ["مرحبا", "هلا", "السلام", "اهلا", "هاي", "هي"],
+      "reply": "👋 أهلاً وسهلاً!\nكيف أقدر أساعدك اليوم؟",
+      "media": null,
+      "buttons": [
+        [
+          { "text": "📞 تواصل معنا", "reply_key": "contact" },
+          { "text": "ℹ️ معلومات", "reply_key": "menu_info" }
+        ]
+      ]
+    },
+    {
+      "triggers": ["تست", "test", "اختبار"],
+      "reply": "✅ البوت شغال تمام!",
+      "media": null,
+      "buttons": []
+    }
+  ],
+
+  "callback_responses": {
+    "contact": {
+      "reply": "📩 تقدر تتواصل معنا عبر:\n@username\n✉️ example@email.com",
+      "media": null,
+      "buttons": [
+        [
+          { "text": "⬅️ رجوع", "reply_key": "back_main" }
+        ]
+      ]
+    },
+
+    "menu_info": {
+      "reply": "📌 اختر أي قسم بدك تعرف عنه أكثر:",
+      "media": null,
+      "buttons": [
+        [
+          { "text": "📦 عن الخدمة", "reply_key": "info_service" },
+          { "text": "💳 الأسعار", "reply_key": "info_prices" }
+        ],
+        [
+          { "text": "⬅️ رجوع", "reply_key": "back_main" }
+        ]
+      ]
+    },
+    "info_service": {
+      "reply": "📦 هذا مثال على قائمة فرعية (زر داخل زر). تقدر تحط هون صورة أو فيديو بدل النص عن طريق حقل media.",
+      "media": null,
+      "buttons": [
+        [
+          { "text": "📄 التفاصيل الكاملة", "reply_key": "info_service_details" }
+        ],
+        [
+          { "text": "⬅️ رجوع", "reply_key": "menu_info" }
+        ]
+      ]
+    },
+    "info_service_details": {
+      "reply": "📄 هذا مثال على المستوى الثالث من الأزرار المتداخلة (زر داخل زر داخل زر). تقدر تكمّل بنفس الطريقة لأي عدد من المستويات.",
+      "media": null,
+      "buttons": [
+        [
+          { "text": "⬅️ رجوع", "reply_key": "info_service" }
+        ]
+      ]
+    },
+    "info_prices": {
+      "reply": "💳 قائمة الأسعار:\n- الباقة الأولى: 10$\n- الباقة الثانية: 20$",
+      "media": null,
+      "buttons": [
+        [
+          { "text": "⬅️ رجوع", "reply_key": "menu_info" }
+        ]
+      ]
+    },
+
+    "back_main": {
+      "reply": "🏠 القائمة الرئيسية\nكيف أقدر أساعدك؟",
+      "media": null,
+      "buttons": [
+        [
+          { "text": "📞 تواصل معنا", "reply_key": "contact" },
+          { "text": "ℹ️ معلومات", "reply_key": "menu_info" }
+        ],
+        [
+          { "text": "🌐 موقعنا", "url": "https://example.com" }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>محرر ردود البوت</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --line:#262b36; --txt:#e7e9ee;
+    --muted:#8b93a3; --accent:#4f8cff; --accent2:#2dd4bf; --danger:#ef4444;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:'Segoe UI', Tahoma, Arial, sans-serif;
+    background:var(--bg); color:var(--txt); padding:24px;
+  }
+  h1{font-size:20px; margin:0 0 4px}
+  h3{font-size:15px; margin:0 0 10px}
+  .sub{color:var(--muted); font-size:13px; margin-bottom:20px}
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:18px; margin-bottom:16px;
+  }
+  .row{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px}
+  label{font-size:13px; color:var(--muted); display:block; margin-bottom:6px}
+  input[type=text], textarea, select{
+    width:100%; background:#0c0e13; border:1px solid var(--line); color:var(--txt);
+    padding:10px 12px; border-radius:10px; font-size:14px; font-family:inherit;
+  }
+  textarea{resize:vertical; min-height:70px}
+  select{cursor:pointer}
+  .triggers-box{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px}
+  .tag{
+    background:#1e2533; border:1px solid var(--line); border-radius:999px;
+    padding:5px 10px; font-size:13px; display:flex; align-items:center; gap:6px;
+  }
+  .tag button{
+    background:none; border:none; color:var(--danger); cursor:pointer; font-size:14px; padding:0;
+  }
+  .add-trigger{display:flex; gap:8px}
+  .add-trigger input{flex:1}
+  button{
+    cursor:pointer; border:none; border-radius:10px; padding:9px 16px;
+    font-size:14px; font-weight:600;
+  }
+  .btn-primary{background:var(--accent); color:#fff}
+  .btn-primary:hover{background:#3d7ae8}
+  .btn-secondary{background:#222838; color:var(--txt); border:1px solid var(--line)}
+  .btn-secondary:hover{background:#2a3144}
+  .btn-danger{background:transparent; color:var(--danger); border:1px solid #3a2230}
+  .btn-danger:hover{background:#2a1620}
+  .btn-success{background:var(--accent2); color:#06201c}
+  .btn-sm{padding:6px 10px; font-size:12px; border-radius:8px}
+  #saveBtn{position:sticky; top:0; z-index:5}
+  .topbar{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:18px; gap:10px; flex-wrap:wrap;
+  }
+  .status{font-size:13px; color:var(--accent2)}
+  .status.err{color:var(--danger)}
+  .empty{color:var(--muted); text-align:center; padding:30px; font-size:14px}
+
+  /* Tabs */
+  .tabs{display:flex; gap:8px; margin-bottom:20px; border-bottom:1px solid var(--line); flex-wrap:wrap}
+  .tab-btn{
+    background:none; border:none; color:var(--muted); padding:10px 4px; font-size:14px;
+    font-weight:600; border-bottom:3px solid transparent; border-radius:0; margin-bottom:-1px;
+  }
+  .tab-btn.active{color:var(--txt); border-bottom-color:var(--accent)}
+  .tab-page{display:none}
+  .tab-page.active{display:block}
+
+  /* Card head */
+  .card-head{
+    display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;
+  }
+  .card-head .title{font-weight:700; font-size:15px}
+
+  /* Toggle switch */
+  .switch-row{display:flex; align-items:center; gap:12px; margin-bottom:14px}
+  .switch{position:relative; display:inline-block; width:46px; height:26px; flex-shrink:0}
+  .switch input{opacity:0; width:0; height:0}
+  .slider{
+    position:absolute; cursor:pointer; inset:0; background:#2a2f3b;
+    border-radius:999px; transition:.2s;
+  }
+  .slider:before{
+    position:absolute; content:""; height:20px; width:20px; right:3px; bottom:3px;
+    background:#fff; border-radius:50%; transition:.2s;
+  }
+  .switch input:checked + .slider{background:var(--accent2)}
+  .switch input:checked + .slider:before{transform:translateX(-20px)}
+  .switch-label{font-size:14px; font-weight:600}
+
+  /* Buttons editor (per-response inline keyboard builder) */
+  .buttons-editor{border:1px dashed var(--line); border-radius:12px; padding:12px; margin-top:6px}
+  .btn-row{
+    display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap; margin-bottom:10px;
+    background:#0c0e13; border:1px solid var(--line); border-radius:10px; padding:10px;
+  }
+  .btn-row .field{flex:1; min-width:120px}
+  .btn-row .field label{margin-bottom:4px}
+  .row-actions{display:flex; gap:6px; align-items:center}
+  .keyboard-row-wrap{
+    border:1px solid var(--line); border-radius:12px; padding:10px; margin-bottom:10px;
+    background:#11141b;
+  }
+  .keyboard-row-head{
+    display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;
+  }
+  .keyboard-row-head .row-title{font-size:12px; color:var(--muted)}
+  .shape-preview-row{display:flex; gap:6px; flex-wrap:wrap; margin-top:6px}
+  .preview-btn{
+    border:1px solid var(--accent); color:var(--accent); background:transparent;
+    padding:7px 14px; font-size:13px; pointer-events:none;
+  }
+  .shape-pill{border-radius:999px}
+  .shape-soft{border-radius:8px}
+  .shape-square{border-radius:0}
+  .shape-outline{background:transparent; border-width:2px}
+  .shape-solid{background:var(--accent); color:#fff; border-color:var(--accent)}
+  .hint{font-size:12px; color:var(--muted); margin-top:4px}
+  .photo-preview{
+    max-width:140px; max-height:140px; border-radius:10px; border:1px solid var(--line);
+    display:block; margin-top:8px; object-fit:cover;
+  }
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+  @media (max-width:720px){ .two-col{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>🤖 محرر ردود البوت</h1>
+    <div class="sub">أضف أو عدّل أو احذف الردود والأزرار والترحيب/الوداع بدون أي برمجة. لا تنسَ الضغط على "حفظ الكل" بعد كل تعديل.</div>
+  </div>
+  <div style="display:flex; gap:10px; align-items:center">
+    <span id="statusMsg" class="status"></span>
+    <button id="saveBtn" class="btn-primary" onclick="saveAll()">💾 حفظ الكل</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="responses" onclick="switchTab('responses')">💬 الردود والأزرار</button>
+  <button class="tab-btn" data-tab="callbacks" onclick="switchTab('callbacks')">🔁 ردود الأزرار</button>
+  <button class="tab-btn" data-tab="welcome" onclick="switchTab('welcome')">👋 الترحيب والوداع</button>
+  <button class="tab-btn" data-tab="start" onclick="switchTab('start')">🚀 رسالة /start</button>
+  <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">⚙️ الإعدادات والتوقيع</button>
+</div>
+
+<!-- ================= صفحة الإعدادات ================= -->
+<div class="tab-page" id="page-settings">
+  <div class="card">
+    <h3>⚙️ إعدادات عامة</h3>
+    <label>توكن البوت (من BotFather)</label>
+    <input type="text" id="settingsToken" oninput="DATA.settings.token = this.value" placeholder="123456:ABC-...">
+    <div style="height:12px"></div>
+    <label>اسم البوت</label>
+    <input type="text" id="settingsBotName" oninput="DATA.settings.bot_name = this.value">
+    <div style="height:12px"></div>
+    <label>حساسية التشابه بالكلمات (0.1 - 1.0، الافتراضي 0.55)</label>
+    <input type="text" id="settingsThreshold" oninput="DATA.settings.fuzzy_threshold = parseFloat(this.value) || 0.55">
+  </div>
+
+  <div class="card">
+    <h3>✍️ التوقيع التلقائي</h3>
+    <p class="hint" style="margin-bottom:14px">
+      هذا النص يُضاف تلقائياً بآخر كل رسالة يرسلها البوت (الرد الرئيسي، ردود الأزرار، الترحيب، الوداع...).
+      اتركه فارغاً لإلغاء التوقيع تماماً.
+    </p>
+    <label>نص التوقيع</label>
+    <input type="text" id="settingsSignature" oninput="DATA.settings.signature = this.value" placeholder="مثال: 𝑺𝑬𝑫𝑫𝑰𝑮">
+  </div>
+</div>
+
+<!-- ================= صفحة الردود ================= -->
+<div class="tab-page active" id="page-responses">
+  <div class="card">
+    <button class="btn-secondary" onclick="addResponse()">➕ إضافة رد جديد</button>
+  </div>
+  <div id="list"></div>
+</div>
+
+<!-- ================= صفحة ردود الأزرار (callback_responses) ================= -->
+<div class="tab-page" id="page-callbacks">
+  <div class="card">
+    <p class="hint" style="margin-bottom:14px">
+      هنا تكتب الرد الذي يظهر عند ضغط المستخدم على أي زر "رد داخل البوت" (الذي له reply_key).
+      كل مفتاح (reply_key) استخدمته في أي زر بصفحة "الردود والأزرار" أو "/start" يجب أن يكون له رد هنا، وإلا سيظهر للمستخدم "لم يتم العثور على رد لهذا الزر".
+    </p>
+    <button class="btn-secondary" onclick="addCallback()">➕ إضافة مفتاح رد جديد</button>
+  </div>
+  <div id="callback-list"></div>
+</div>
+
+<!-- ================= صفحة الترحيب والوداع ================= -->
+<div class="tab-page" id="page-welcome">
+  <div class="two-col">
+
+    <div class="card">
+      <h3>👋 رسالة الترحيب</h3>
+      <div class="switch-row">
+        <label class="switch">
+          <input type="checkbox" id="welcomeEnabled" onchange="DATA.welcome.enabled = this.checked">
+          <span class="slider"></span>
+        </label>
+        <span class="switch-label">تفعيل الترحيب بالأعضاء الجدد</span>
+      </div>
+
+      <label>نص الترحيب (استخدم {name} لاسم العضو و {username} لليوزر)</label>
+      <textarea id="welcomeText" style="min-height:160px" oninput="DATA.welcome.text = this.value"></textarea>
+
+      <div style="height:12px"></div>
+      <label>الصورة الافتراضية (تُستخدم إن لم يكن للعضو صورة بروفايل)</label>
+      <input type="text" id="welcomePhoto" placeholder="media/default.jpg" oninput="DATA.welcome.default_photo = this.value">
+      <div class="hint">تُستخدم فقط إذا لم تحدد وسائط مخصصة أدناه ولم يكن للعضو صورة بروفايل.</div>
+      <img id="welcomePhotoPreview" class="photo-preview" style="display:none">
+      <div style="height:12px"></div>
+      <div id="welcomeMediaFields"></div>
+    </div>
+
+    <div class="card">
+      <h3>🌙 رسالة الوداع</h3>
+      <div class="switch-row">
+        <label class="switch">
+          <input type="checkbox" id="farewellEnabled" onchange="DATA.farewell.enabled = this.checked">
+          <span class="slider"></span>
+        </label>
+        <span class="switch-label">تفعيل الوداع عند مغادرة عضو</span>
+      </div>
+
+      <label>نص الوداع (استخدم {name} لاسم العضو و {username} لليوزر)</label>
+      <textarea id="farewellText" style="min-height:160px" oninput="DATA.farewell.text = this.value"></textarea>
+
+      <div style="height:12px"></div>
+      <label>الصورة الافتراضية (تُستخدم إن لم يكن للعضو صورة بروفايل)</label>
+      <input type="text" id="farewellPhoto" placeholder="media/default.jpg" oninput="DATA.farewell.default_photo = this.value">
+      <div class="hint">تُستخدم فقط إذا لم تحدد وسائط مخصصة أدناه ولم يكن للعضو صورة بروفايل.</div>
+      <img id="farewellPhotoPreview" class="photo-preview" style="display:none">
+      <div style="height:12px"></div>
+      <div id="farewellMediaFields"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= صفحة /start ================= -->
+<div class="tab-page" id="page-start">
+  <div class="card">
+    <h3>🚀 رسالة /start</h3>
+    <p class="hint" style="margin-bottom:14px">هذه الرسالة تُرسل عند كتابة المستخدم /start أو عند فتح البوت لأول مرة.</p>
+
+    <label>نص الرسالة</label>
+    <textarea id="startText" style="min-height:120px" oninput="DATA.start.text = this.value"></textarea>
+
+    <div style="height:14px"></div>
+    <div id="startMediaFields"></div>
+
+    <div style="height:14px"></div>
+    <label>🔘 الأزرار Inline المرفقة مع رسالة /start (يقدر أي زر يفتح قائمة فرعية)</label>
+    <div class="buttons-editor" id="buttons-editor-start"></div>
+    <div style="margin-top:8px">
+      <button class="btn-secondary btn-sm" onclick="addStartButtonRow()">➕ إضافة صف أزرار</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let DATA = { responses: [], welcome: {}, farewell: {}, start: {}, callback_responses: {}, settings: {} };
+
+const SHAPES = [
+  { id: 'solid_pill',   label: 'مملوء × دائري بالكامل', cls: 'shape-pill shape-solid' },
+  { id: 'solid_soft',   label: 'مملوء × زوايا ناعمة',   cls: 'shape-soft shape-solid' },
+  { id: 'solid_square', label: 'مملوء × زوايا حادة',    cls: 'shape-square shape-solid' },
+  { id: 'outline_pill', label: 'مخطط × دائري بالكامل',  cls: 'shape-pill shape-outline' },
+  { id: 'outline_soft', label: 'مخطط × زوايا ناعمة',    cls: 'shape-soft shape-outline' },
+];
+
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  if(tab === 'callbacks') renderCallbacks();
+}
+
+async function loadData(){
+  const res = await fetch('/api/config');
+  DATA = await res.json();
+  if(!DATA.settings) DATA.settings = {};
+  if(!DATA.welcome) DATA.welcome = { enabled:true, default_photo:'media/default.jpg', text:'' };
+  if(!DATA.farewell) DATA.farewell = { enabled:true, default_photo:'media/default.jpg', text:'' };
+  if(!DATA.responses) DATA.responses = [];
+  if(!DATA.start) DATA.start = { text:'', buttons:[] };
+  if(!DATA.start.buttons) DATA.start.buttons = [];
+  if(!DATA.callback_responses) DATA.callback_responses = {};
+  renderResponses();
+  renderWelcomeFarewell();
+  renderStart();
+  renderCallbacks();
+  renderSettings();
+}
+
+/* ============== صفحة الإعدادات ============== */
+function renderSettings(){
+  document.getElementById('settingsToken').value = DATA.settings.token || '';
+  document.getElementById('settingsBotName').value = DATA.settings.bot_name || '';
+  document.getElementById('settingsThreshold').value = DATA.settings.fuzzy_threshold ?? 0.55;
+  document.getElementById('settingsSignature').value = DATA.settings.signature || '';
+}
+
+
+/* ============== صفحة الترحيب والوداع ============== */
+function renderWelcomeFarewell(){
+  document.getElementById('welcomeEnabled').checked = DATA.welcome.enabled !== false;
+  document.getElementById('welcomeText').value = DATA.welcome.text || '';
+  document.getElementById('welcomePhoto').value = DATA.welcome.default_photo || '';
+  updatePhotoPreview('welcomePhoto', 'welcomePhotoPreview');
+
+  document.getElementById('farewellEnabled').checked = DATA.farewell.enabled !== false;
+  document.getElementById('farewellText').value = DATA.farewell.text || '';
+  document.getElementById('farewellPhoto').value = DATA.farewell.default_photo || '';
+  updatePhotoPreview('farewellPhoto', 'farewellPhotoPreview');
+
+  document.getElementById('welcomeMediaFields').innerHTML = buildMediaFieldsHtml('welcome', 'welcome', DATA.welcome.media);
+  document.getElementById('farewellMediaFields').innerHTML = buildMediaFieldsHtml('farewell', 'farewell', DATA.farewell.media);
+}
+
+function updatePhotoPreview(inputId, imgId){
+  const path = document.getElementById(inputId).value.trim();
+  const img = document.getElementById(imgId);
+  if(!path){ img.style.display = 'none'; return; }
+  img.src = path;
+  img.style.display = 'block';
+  img.onerror = () => { img.style.display = 'none'; };
+}
+document.getElementById('welcomePhoto').addEventListener('input', () => updatePhotoPreview('welcomePhoto','welcomePhotoPreview'));
+document.getElementById('farewellPhoto').addEventListener('input', () => updatePhotoPreview('farewellPhoto','farewellPhotoPreview'));
+
+/* ============== صفحة الردود ============== */
+function renderResponses(){
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+  if(!DATA.responses || DATA.responses.length === 0){
+    list.innerHTML = '<div class="empty">لا يوجد أي رد حتى الآن. اضغط "إضافة رد جديد" للبدء.</div>';
+    return;
+  }
+  DATA.responses.forEach((item, idx) => {
+    list.appendChild(buildCard(item, idx));
+  });
+}
+
+function buildCard(item, idx){
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  card.innerHTML = `
+    <div class="card-head">
+      <span class="title">رد رقم ${idx + 1}</span>
+      <button class="btn-danger" onclick="removeResponse(${idx})">🗑 حذف هذا الرد</button>
+    </div>
+
+    <label>الكلمات التي يفهمها البوت (اكتب كلمة واضغط Enter لإضافتها)</label>
+    <div class="triggers-box" id="triggers-${idx}"></div>
+    <div class="add-trigger">
+      <input type="text" placeholder="مثال: مرحبا" id="newtrig-${idx}"
+        onkeydown="if(event.key==='Enter'){event.preventDefault(); addTrigger(${idx})}">
+      <button class="btn-secondary" onclick="addTrigger(${idx})">إضافة كلمة</button>
+    </div>
+
+    <div style="height:12px"></div>
+
+    <label>نص رد البوت</label>
+    <textarea id="reply-${idx}" oninput="DATA.responses[${idx}].reply = this.value">${escapeHtml(item.reply || '')}</textarea>
+
+    <div style="height:14px"></div>
+    ${buildMediaFieldsHtml('resp', idx, item.media)}
+
+    <div style="height:14px"></div>
+    <label>🔘 الأزرار المرفقة مع هذا الرد (يقدر أي زر يفتح قائمة فرعية بأزرار جديدة)</label>
+    <div class="buttons-editor" id="buttons-editor-${idx}"></div>
+    <div style="margin-top:8px">
+      <button class="btn-secondary btn-sm" onclick="addButtonRow(${idx})">➕ إضافة صف أزرار جديد</button>
+    </div>
+  `;
+
+  renderTriggers(item, idx, card.querySelector(`#triggers-${idx}`));
+  renderButtonsEditor(item, idx, card.querySelector(`#buttons-editor-${idx}`));
+  return card;
+}
+
+/* ============== وسائط مرفقة (صورة/فيديو/صوت/ملف) ============== */
+const MEDIA_TYPES = [
+  { id: '', label: 'بدون وسائط (نص فقط)' },
+  { id: 'photo', label: '🖼️ صورة' },
+  { id: 'video', label: '🎬 فيديو' },
+  { id: 'audio', label: '🎵 صوت (أغنية/مقطع)' },
+  { id: 'voice', label: '🎤 رسالة صوتية' },
+  { id: 'document', label: '📄 مستند/ملف' },
+  { id: 'animation', label: '🌀 GIF متحرك' },
+];
+
+function buildMediaFieldsHtml(scope, id, media){
+  media = media || {};
+  const type = media.type || '';
+  const path = media.path || '';
+  const uid = `media-${scope}-${cssKey(String(id))}`;
+  return `
+    <label>🖼️🎬🎵 وسائط مرفقة مع هذا الرد (اختياري)</label>
+    <div class="btn-row">
+      <div class="field" style="max-width:220px">
+        <label>نوع الوسائط</label>
+        <select id="${uid}-type" onchange="updateMediaField('${scope}','${String(id)}','type',this.value)">
+          ${MEDIA_TYPES.map(t => `<option value="${t.id}" ${t.id===type?'selected':''}>${t.label}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field">
+        <label>مسار الملف داخل مجلد media (مثال: media/photo1.jpg)</label>
+        <input type="text" id="${uid}-path" value="${escapeAttr(path)}" placeholder="media/example.jpg"
+          oninput="updateMediaField('${scope}','${String(id)}','path',this.value)">
+      </div>
+    </div>
+    <div class="hint">حط الملف داخل مجلد media بجانب config.json، ثم اكتب مساره هنا. إذا حددت نوع وسائط، الرد سيُرسل كصورة/فيديو/صوت مع النص كتعليق (caption) بدل رسالة نصية عادية.</div>
+  `;
+}
+
+function ensureMediaObj(item){
+  if(!item.media || typeof item.media !== 'object') item.media = { type:'', path:'' };
+  return item.media;
+}
+
+function updateMediaField(scope, id, field, value){
+  let item;
+  if(scope === 'resp') item = DATA.responses[parseInt(id,10)];
+  else if(scope === 'cb') item = DATA.callback_responses[id];
+  else if(scope === 'start') item = DATA.start;
+  else if(scope === 'welcome') item = DATA.welcome;
+  else if(scope === 'farewell') item = DATA.farewell;
+  if(!item) return;
+  const media = ensureMediaObj(item);
+  media[field] = value;
+  if(!media.type){
+    item.media = null; // لا وسائط = null بالكونفيج
+  } else {
+    item.media = media;
+  }
+}
+
+function renderTriggers(item, idx, container){
+  container.innerHTML = '';
+  (item.triggers || []).forEach((trig, tIdx) => {
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.innerHTML = `${escapeHtml(trig)} <button onclick="removeTrigger(${idx}, ${tIdx})">✕</button>`;
+    container.appendChild(tag);
+  });
+}
+
+function addTrigger(idx){
+  const input = document.getElementById(`newtrig-${idx}`);
+  const val = input.value.trim();
+  if(!val) return;
+  if(!DATA.responses[idx].triggers) DATA.responses[idx].triggers = [];
+  DATA.responses[idx].triggers.push(val);
+  input.value = '';
+  renderResponses();
+}
+
+function removeTrigger(idx, tIdx){
+  DATA.responses[idx].triggers.splice(tIdx, 1);
+  renderResponses();
+}
+
+function addResponse(){
+  DATA.responses.push({ triggers: [], reply: '', media: null, buttons: [] });
+  renderResponses();
+  window.scrollTo(0, document.body.scrollHeight);
+}
+
+function removeResponse(idx){
+  if(!confirm('هل أنت متأكد من حذف هذا الرد؟')) return;
+  DATA.responses.splice(idx, 1);
+  renderResponses();
+}
+
+/* ============== صفحة ردود الأزرار (callback_responses) ============== */
+
+function collectUsedReplyKeys(){
+  const keys = new Set();
+  const scanRows = (rows) => {
+    (rows || []).forEach(row => {
+      (row || []).forEach(btn => {
+        if(btn && btn.reply_key) keys.add(btn.reply_key);
+      });
+    });
+  };
+  (DATA.responses || []).forEach(item => scanRows(item.buttons));
+  scanRows(DATA.start && DATA.start.buttons);
+  Object.values(DATA.callback_responses || {}).forEach(cb => scanRows(cb.buttons));
+  return keys;
+}
+
+function renderCallbacks(){
+  const container = document.getElementById('callback-list');
+  container.innerHTML = '';
+
+  const definedKeys = Object.keys(DATA.callback_responses || {});
+  const usedKeys = collectUsedReplyKeys();
+  const missingKeys = [...usedKeys].filter(k => !definedKeys.includes(k));
+
+  if(missingKeys.length > 0){
+    const warn = document.createElement('div');
+    warn.className = 'card';
+    warn.style.borderColor = 'var(--danger)';
+    warn.innerHTML = `
+      <div style="color:var(--danger); font-weight:700; margin-bottom:8px">⚠️ يوجد مفاتيح أزرار مستخدمة وبلا رد محدد:</div>
+      <div class="triggers-box">
+        ${missingKeys.map(k => `<span class="tag">${escapeHtml(k)}
+          <button onclick="createMissingCallback('${k.replace(/'/g, "\\'")}')" title="إنشاء رد لهذا المفتاح">➕</button>
+        </span>`).join('')}
+      </div>
+      <div class="hint">اضغط ➕ بجانب أي مفتاح لإنشاء رد له فوراً، وإلا سيظهر للمستخدم "لم يتم العثور على رد لهذا الزر" عند الضغط على الزر المرتبط به.</div>
+    `;
+    container.appendChild(warn);
+  }
+
+  if(definedKeys.length === 0){
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.textContent = 'لا توجد ردود أزرار حتى الآن. اضغط "إضافة مفتاح رد جديد" للبدء.';
+    container.appendChild(empty);
+    return;
+  }
+
+  definedKeys.forEach(key => {
+    container.appendChild(buildCallbackCard(key));
+  });
+}
+
+function createMissingCallback(key){
+  if(!DATA.callback_responses) DATA.callback_responses = {};
+  if(DATA.callback_responses[key]) return;
+  DATA.callback_responses[key] = { reply: '', media: null, buttons: [] };
+  renderCallbacks();
+}
+
+function buildCallbackCard(key){
+  const item = DATA.callback_responses[key];
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  card.innerHTML = `
+    <div class="card-head">
+      <span class="title">🔑 مفتاح: ${escapeHtml(key)}</span>
+      <button class="btn-danger" onclick="removeCallback('${key.replace(/'/g, "\\'")}')">🗑 حذف هذا الرد</button>
+    </div>
+
+    <label>نص الرد الذي يظهر عند ضغط المستخدم على الزر</label>
+    <textarea id="cbreply-${cssKey(key)}" oninput="updateCallbackReply('${key.replace(/'/g, "\\'")}', this.value)">${escapeHtml(item.reply || '')}</textarea>
+
+    <div style="height:14px"></div>
+    ${buildMediaFieldsHtml('cb', key, item.media)}
+
+    <div style="height:14px"></div>
+    <label>🔘 الأزرار المرفقة مع هذا الرد (مثل زر "رجوع"، أو أزرار تفتح قائمة فرعية أعمق)</label>
+    <div class="buttons-editor" id="cbbuttons-editor-${cssKey(key)}"></div>
+    <div style="margin-top:8px">
+      <button class="btn-secondary btn-sm" onclick="addCallbackButtonRow('${key.replace(/'/g, "\\'")}')">➕ إضافة صف أزرار جديد</button>
+    </div>
+  `;
+
+  renderCallbackButtonsEditor(key, card.querySelector(`#cbbuttons-editor-${cssKey(key)}`));
+  return card;
+}
+
+function cssKey(key){
+  return key.replace(/[^a-zA-Z0-9_\u0600-\u06FF-]/g, '_');
+}
+
+function updateCallbackReply(key, value){
+  DATA.callback_responses[key].reply = value;
+}
+
+function addCallback(){
+  const name = prompt('اكتب اسم مفتاح الرد (reply_key) بالإنجليزية وبدون مسافات، مثل: contact أو faq1');
+  if(!name) return;
+  const key = name.trim();
+  if(!key) return;
+  if(!DATA.callback_responses) DATA.callback_responses = {};
+  if(DATA.callback_responses[key]){
+    alert('هذا المفتاح موجود بالفعل، يمكنك تعديله من القائمة بالأسفل.');
+    return;
+  }
+  DATA.callback_responses[key] = { reply: '', buttons: [] };
+  renderCallbacks();
+  window.scrollTo(0, document.body.scrollHeight);
+}
+
+function removeCallback(key){
+  if(!confirm('هل أنت متأكد من حذف رد هذا المفتاح؟ الأزرار التي تستخدمه ستظهر رسالة خطأ بعد الحذف.')) return;
+  delete DATA.callback_responses[key];
+  renderCallbacks();
+}
+
+function renderCallbackButtonsEditor(key, container){
+  const item = DATA.callback_responses[key];
+  if(!item.buttons) item.buttons = [];
+  const rows = item.buttons;
+  container.innerHTML = '';
+
+  if(rows.length === 0){
+    const empty = document.createElement('div');
+    empty.className = 'hint';
+    empty.textContent = 'لا توجد أزرار لهذا الرد. اضغط "إضافة صف أزرار جديد" لإضافة أول زر.';
+    container.appendChild(empty);
+    return;
+  }
+
+  rows.forEach((row, rIdx) => {
+    const rowWrap = document.createElement('div');
+    rowWrap.className = 'keyboard-row-wrap';
+
+    const head = document.createElement('div');
+    head.className = 'keyboard-row-head';
+    head.innerHTML = `
+      <span class="row-title">صف ${rIdx + 1} (الأزرار بهذا الصف تظهر بجانب بعضها)</span>
+      <div class="row-actions">
+        <button class="btn-secondary btn-sm" onclick="addCallbackButtonToRow('${key.replace(/'/g, "\\'")}', ${rIdx})">➕ زر بهذا الصف</button>
+        <button class="btn-danger btn-sm" onclick="removeCallbackButtonRow('${key.replace(/'/g, "\\'")}', ${rIdx})">🗑 حذف الصف</button>
+      </div>
+    `;
+    rowWrap.appendChild(head);
+
+    row.forEach((btn, bIdx) => {
+      rowWrap.appendChild(buildCallbackButtonField(key, rIdx, bIdx, btn));
+    });
+
+    container.appendChild(rowWrap);
+  });
+}
+
+function buildCallbackButtonField(key, rIdx, bIdx, btn){
+  const wrap = document.createElement('div');
+  wrap.className = 'btn-row';
+
+  const isUrl = !!btn.url;
+  const shape = btn.shape || 'solid_soft';
+  const safeKey = key.replace(/'/g, "\\'");
+
+  wrap.innerHTML = `
+    <div class="field">
+      <label>نص الزر</label>
+      <input type="text" value="${escapeAttr(btn.text || '')}"
+        oninput="updateCallbackButtonField('${safeKey}',${rIdx},${bIdx},'text',this.value)" placeholder="مثال: ⬅️ رجوع">
+    </div>
+    <div class="field" style="max-width:160px">
+      <label>نوع الزر</label>
+      <select onchange="updateCallbackButtonType('${safeKey}',${rIdx},${bIdx},this.value)">
+        <option value="reply" ${!isUrl ? 'selected' : ''}>رد داخل البوت</option>
+        <option value="url" ${isUrl ? 'selected' : ''}>فتح رابط خارجي</option>
+      </select>
+    </div>
+    <div class="field">
+      ${ isUrl
+        ? `<label>الرابط</label><input type="text" value="${escapeAttr(btn.url || '')}" placeholder="https://example.com" oninput="updateCallbackButtonField('${safeKey}',${rIdx},${bIdx},'url',this.value)">`
+        : `<label>مفتاح الرد (reply_key)</label><input type="text" value="${escapeAttr(btn.reply_key || '')}" placeholder="مثال: back_main" oninput="updateCallbackButtonField('${safeKey}',${rIdx},${bIdx},'reply_key',this.value)">`
+      }
+    </div>
+    <div class="field" style="max-width:200px">
+      <label>شكل الزر</label>
+      <select onchange="updateCallbackButtonField('${safeKey}',${rIdx},${bIdx},'shape',this.value)">
+        ${SHAPES.map(s => `<option value="${s.id}" ${shape === s.id ? 'selected' : ''}>${s.label}</option>`).join('')}
+      </select>
+    </div>
+    <div class="row-actions">
+      <button class="btn-danger btn-sm" onclick="removeCallbackButtonFromRow('${safeKey}',${rIdx},${bIdx})">🗑</button>
+    </div>
+  `;
+
+  const previewWrap = document.createElement('div');
+  previewWrap.className = 'shape-preview-row';
+  const shapeObj = SHAPES.find(s => s.id === shape) || SHAPES[1];
+  previewWrap.innerHTML = `<button type="button" class="preview-btn ${shapeObj.cls}">${escapeHtml(btn.text || 'معاينة الزر')}</button>`;
+
+  const outer = document.createElement('div');
+  outer.appendChild(wrap);
+  outer.appendChild(previewWrap);
+  return outer;
+}
+
+function updateCallbackButtonField(key, rIdx, bIdx, field, value){
+  DATA.callback_responses[key].buttons[rIdx][bIdx][field] = value;
+  refreshCallbackPreview(key);
+}
+
+function refreshCallbackPreview(key){
+  const container = document.getElementById(`cbbuttons-editor-${cssKey(key)}`);
+  if(!container) return;
+  clearTimeout(container._debounce);
+  container._debounce = setTimeout(() => {
+    renderCallbackButtonsEditor(key, container);
+  }, 500);
+}
+
+function updateCallbackButtonType(key, rIdx, bIdx, type){
+  const btn = DATA.callback_responses[key].buttons[rIdx][bIdx];
+  if(type === 'url'){
+    delete btn.reply_key;
+    if(!btn.url) btn.url = '';
+  } else {
+    delete btn.url;
+    if(!btn.reply_key) btn.reply_key = '';
+  }
+  renderCallbackButtonsEditor(key, document.getElementById(`cbbuttons-editor-${cssKey(key)}`));
+}
+
+function addCallbackButtonRow(key){
+  if(!DATA.callback_responses[key].buttons) DATA.callback_responses[key].buttons = [];
+  DATA.callback_responses[key].buttons.push([{ text: '', reply_key: '', shape: 'solid_soft' }]);
+  renderCallbackButtonsEditor(key, document.getElementById(`cbbuttons-editor-${cssKey(key)}`));
+}
+
+function removeCallbackButtonRow(key, rIdx){
+  DATA.callback_responses[key].buttons.splice(rIdx, 1);
+  renderCallbackButtonsEditor(key, document.getElementById(`cbbuttons-editor-${cssKey(key)}`));
+}
+
+function addCallbackButtonToRow(key, rIdx){
+  DATA.callback_responses[key].buttons[rIdx].push({ text: '', reply_key: '', shape: 'solid_soft' });
+  renderCallbackButtonsEditor(key, document.getElementById(`cbbuttons-editor-${cssKey(key)}`));
+}
+
+function removeCallbackButtonFromRow(key, rIdx, bIdx){
+  DATA.callback_responses[key].buttons[rIdx].splice(bIdx, 1);
+  if(DATA.callback_responses[key].buttons[rIdx].length === 0){
+    DATA.callback_responses[key].buttons.splice(rIdx, 1);
+  }
+  renderCallbackButtonsEditor(key, document.getElementById(`cbbuttons-editor-${cssKey(key)}`));
+}
+
+/* ---------- محرر الأزرار (صفوف + أزرار + شكل الزر) ---------- */
+
+function ensureButtons(item){
+  if(!item.buttons) item.buttons = [];
+  return item.buttons;
+}
+
+function renderButtonsEditor(item, idx, container){
+  const rows = ensureButtons(item);
+  container.innerHTML = '';
+
+  if(rows.length === 0){
+    const empty = document.createElement('div');
+    empty.className = 'hint';
+    empty.textContent = 'لا توجد أزرار لهذا الرد. اضغط "إضافة صف أزرار جديد" لإضافة أول زر.';
+    container.appendChild(empty);
+    return;
+  }
+
+  rows.forEach((row, rIdx) => {
+    const rowWrap = document.createElement('div');
+    rowWrap.className = 'keyboard-row-wrap';
+
+    const head = document.createElement('div');
+    head.className = 'keyboard-row-head';
+    head.innerHTML = `
+      <span class="row-title">صف ${rIdx + 1} (الأزرار بهذا الصف تظهر بجانب بعضها)</span>
+      <div class="row-actions">
+        <button class="btn-secondary btn-sm" onclick="addButtonToRow(${idx}, ${rIdx})">➕ زر بهذا الصف</button>
+        <button class="btn-danger btn-sm" onclick="removeButtonRow(${idx}, ${rIdx})">🗑 حذف الصف</button>
+      </div>
+    `;
+    rowWrap.appendChild(head);
+
+    row.forEach((btn, bIdx) => {
+      rowWrap.appendChild(buildButtonRowField(item, idx, rIdx, bIdx, btn));
+    });
+
+    container.appendChild(rowWrap);
+  });
+}
+
+function buildButtonRowField(item, idx, rIdx, bIdx, btn){
+  const wrap = document.createElement('div');
+  wrap.className = 'btn-row';
+
+  const isUrl = !!btn.url;
+  const shape = btn.shape || 'solid_soft';
+
+  wrap.innerHTML = `
+    <div class="field">
+      <label>نص الزر</label>
+      <input type="text" value="${escapeAttr(btn.text || '')}"
+        oninput="updateButtonField(${idx},${rIdx},${bIdx},'text',this.value)" placeholder="مثال: 📞 تواصل معنا">
+    </div>
+    <div class="field" style="max-width:160px">
+      <label>نوع الزر</label>
+      <select onchange="updateButtonType(${idx},${rIdx},${bIdx},this.value)">
+        <option value="reply" ${!isUrl ? 'selected' : ''}>رد داخل البوت</option>
+        <option value="url" ${isUrl ? 'selected' : ''}>فتح رابط خارجي</option>
+      </select>
+    </div>
+    <div class="field" id="valfield-${idx}-${rIdx}-${bIdx}">
+      ${ isUrl
+        ? `<label>الرابط</label><input type="text" value="${escapeAttr(btn.url || '')}" placeholder="https://example.com" oninput="updateButtonField(${idx},${rIdx},${bIdx},'url',this.value)">`
+        : `<label>مفتاح الرد (reply_key)</label><input type="text" value="${escapeAttr(btn.reply_key || '')}" placeholder="مثال: contact" oninput="updateButtonField(${idx},${rIdx},${bIdx},'reply_key',this.value)">`
+      }
+    </div>
+    <div class="field" style="max-width:200px">
+      <label>شكل الزر</label>
+      <select onchange="updateButtonField(${idx},${rIdx},${bIdx},'shape',this.value)">
+        ${SHAPES.map(s => `<option value="${s.id}" ${shape === s.id ? 'selected' : ''}>${s.label}</option>`).join('')}
+      </select>
+    </div>
+    <div class="row-actions">
+      <button class="btn-danger btn-sm" onclick="removeButtonFromRow(${idx},${rIdx},${bIdx})">🗑</button>
+    </div>
+  `;
+
+  const previewWrap = document.createElement('div');
+  previewWrap.className = 'shape-preview-row';
+  const shapeObj = SHAPES.find(s => s.id === shape) || SHAPES[1];
+  previewWrap.innerHTML = `<button type="button" class="preview-btn ${shapeObj.cls}">${escapeHtml(btn.text || 'معاينة الزر')}</button>`;
+
+  const outer = document.createElement('div');
+  outer.appendChild(wrap);
+  outer.appendChild(previewWrap);
+  return outer;
+}
+
+function updateButtonField(idx, rIdx, bIdx, field, value){
+  DATA.responses[idx].buttons[rIdx][bIdx][field] = value;
+  refreshSinglePreview(idx, rIdx, bIdx);
+}
+
+function refreshSinglePreview(idx, rIdx, bIdx){
+  const container = document.getElementById(`buttons-editor-${idx}`);
+  if(!container) return;
+  clearTimeout(container._debounce);
+  container._debounce = setTimeout(() => {
+    renderButtonsEditor(DATA.responses[idx], idx, container);
+  }, 500);
+}
+
+function updateButtonType(idx, rIdx, bIdx, type){
+  const btn = DATA.responses[idx].buttons[rIdx][bIdx];
+  if(type === 'url'){
+    delete btn.reply_key;
+    if(!btn.url) btn.url = '';
+  } else {
+    delete btn.url;
+    if(!btn.reply_key) btn.reply_key = '';
+  }
+  renderButtonsEditor(DATA.responses[idx], idx, document.getElementById(`buttons-editor-${idx}`));
+}
+
+function addButtonRow(idx){
+  ensureButtons(DATA.responses[idx]).push([{ text: '', reply_key: '', shape: 'solid_soft' }]);
+  renderButtonsEditor(DATA.responses[idx], idx, document.getElementById(`buttons-editor-${idx}`));
+}
+
+function removeButtonRow(idx, rIdx){
+  DATA.responses[idx].buttons.splice(rIdx, 1);
+  renderButtonsEditor(DATA.responses[idx], idx, document.getElementById(`buttons-editor-${idx}`));
+}
+
+function addButtonToRow(idx, rIdx){
+  DATA.responses[idx].buttons[rIdx].push({ text: '', reply_key: '', shape: 'solid_soft' });
+  renderButtonsEditor(DATA.responses[idx], idx, document.getElementById(`buttons-editor-${idx}`));
+}
+
+function removeButtonFromRow(idx, rIdx, bIdx){
+  DATA.responses[idx].buttons[rIdx].splice(bIdx, 1);
+  if(DATA.responses[idx].buttons[rIdx].length === 0){
+    DATA.responses[idx].buttons.splice(rIdx, 1);
+  }
+  renderButtonsEditor(DATA.responses[idx], idx, document.getElementById(`buttons-editor-${idx}`));
+}
+
+/* ============== أدوات مساعدة ============== */
+function escapeHtml(str){
+  return (str || '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  })[c]);
+}
+function escapeAttr(str){
+  return escapeHtml(str).replace(/`/g, '&#96;');
+}
+
+/* ============== صفحة /start ============== */
+function renderStart(){
+  document.getElementById('startText').value = DATA.start.text || '';
+  document.getElementById('startMediaFields').innerHTML = buildMediaFieldsHtml('start', 'start', DATA.start.media);
+  renderStartButtonsEditor();
+}
+
+function renderStartButtonsEditor(){
+  const container = document.getElementById('buttons-editor-start');
+  const rows = DATA.start.buttons || [];
+  container.innerHTML = '';
+
+  if(rows.length === 0){
+    const empty = document.createElement('div');
+    empty.className = 'hint';
+    empty.textContent = 'لا توجد أزرار حتى الآن. اضغط "إضافة صف أزرار" لإضافة أول زر.';
+    container.appendChild(empty);
+    return;
+  }
+
+  rows.forEach((row, rIdx) => {
+    const rowWrap = document.createElement('div');
+    rowWrap.className = 'keyboard-row-wrap';
+    const head = document.createElement('div');
+    head.className = 'keyboard-row-head';
+    head.innerHTML = `
+      <span class="row-title">صف ${rIdx+1}</span>
+      <div class="row-actions">
+        <button class="btn-secondary btn-sm" onclick="addStartButtonToRow(${rIdx})">➕ زر</button>
+        <button class="btn-danger btn-sm" onclick="removeStartButtonRow(${rIdx})">🗑 حذف الصف</button>
+      </div>`;
+    rowWrap.appendChild(head);
+
+    row.forEach((btn, bIdx) => {
+      rowWrap.appendChild(buildStartButtonField(rIdx, bIdx, btn));
+    });
+    container.appendChild(rowWrap);
+  });
+}
+
+function buildStartButtonField(rIdx, bIdx, btn){
+  const isUrl = !!btn.url;
+  const wrap = document.createElement('div');
+  wrap.className = 'btn-row';
+  wrap.innerHTML = `
+    <div class="field">
+      <label>نص الزر</label>
+      <input type="text" value="${escapeAttr(btn.text||'')}"
+        oninput="updateStartBtnField(${rIdx},${bIdx},'text',this.value)" placeholder="مثال: 📞 تواصل">
+    </div>
+    <div class="field" style="max-width:160px">
+      <label>نوع الزر</label>
+      <select onchange="updateStartBtnType(${rIdx},${bIdx},this.value)">
+        <option value="reply" ${!isUrl?'selected':''}>رد داخل البوت</option>
+        <option value="url" ${isUrl?'selected':''}>رابط خارجي</option>
+      </select>
+    </div>
+    <div class="field">
+      ${ isUrl
+        ? `<label>الرابط</label><input type="text" value="${escapeAttr(btn.url||'')}" placeholder="https://..." oninput="updateStartBtnField(${rIdx},${bIdx},'url',this.value)">`
+        : `<label>reply_key</label><input type="text" value="${escapeAttr(btn.reply_key||'')}" placeholder="مثال: contact" oninput="updateStartBtnField(${rIdx},${bIdx},'reply_key',this.value)">`
+      }
+    </div>
+    <div class="row-actions">
+      <button class="btn-danger btn-sm" onclick="removeStartBtnFromRow(${rIdx},${bIdx})">🗑</button>
+    </div>`;
+  return wrap;
+}
+
+function updateStartBtnField(rIdx, bIdx, field, value){
+  DATA.start.buttons[rIdx][bIdx][field] = value;
+}
+function updateStartBtnType(rIdx, bIdx, type){
+  const btn = DATA.start.buttons[rIdx][bIdx];
+  if(type==='url'){ delete btn.reply_key; if(!btn.url) btn.url=''; }
+  else { delete btn.url; if(!btn.reply_key) btn.reply_key=''; }
+  renderStartButtonsEditor();
+}
+function addStartButtonRow(){
+  if(!DATA.start.buttons) DATA.start.buttons=[];
+  DATA.start.buttons.push([{text:'',reply_key:''}]);
+  renderStartButtonsEditor();
+}
+function removeStartButtonRow(rIdx){
+  DATA.start.buttons.splice(rIdx,1);
+  renderStartButtonsEditor();
+}
+function addStartButtonToRow(rIdx){
+  DATA.start.buttons[rIdx].push({text:'',reply_key:''});
+  renderStartButtonsEditor();
+}
+function removeStartBtnFromRow(rIdx,bIdx){
+  DATA.start.buttons[rIdx].splice(bIdx,1);
+  if(DATA.start.buttons[rIdx].length===0) DATA.start.buttons.splice(rIdx,1);
+  renderStartButtonsEditor();
+}
+
+async function saveAll(){
+  const statusEl = document.getElementById('statusMsg');
+  try{
+    const res = await fetch('/api/config', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(DATA)
+    });
+    if(!res.ok) throw new Error('فشل الحفظ');
+    statusEl.textContent = '✅ تم الحفظ بنجاح';
+    statusEl.className = 'status';
+  }catch(e){
+    statusEl.textContent = '❌ حدث خطأ أثناء الحفظ';
+    statusEl.className = 'status err';
+  }
+  setTimeout(() => statusEl.textContent = '', 3000);
+}
+
+loadData();
+</script>
+
+</body>
+</html>
